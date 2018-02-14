@@ -98,39 +98,47 @@ void interactive_mode(char cmd[]) {
         //parse command
         ********************************/
 
-        //splite command into each token 
+        //splite input string into command line
         char** commands;
         commands = str_split(user_input, ';');
 
         if (commands)
         {
-            
             int i;
             for (i = 0; *(commands + i); i++)
             {
-                printf("command=[%s]\n", *(commands + i)); //use to debug command 
+                //printf("command=[%s]\n", *(commands + i)); //use to debug command 
+                //fork process
+                pid_t child_pid, wpid;
+                int status = 0;
 
-                //-----------------
-                char** tokens;
-                tokens = str_split(*(commands + i), ' ');
+                //for child process only 
+			    if ((child_pid = fork()) == 0) {
 
-                if (tokens)
-                {
-                    int i;
-                    for (i = 0; *(tokens + i); i++)
+                    //splite command into each token
+                    char** tokens;
+                    tokens = str_split(*(commands + i), ' ');
+
+                    if (tokens)
                     {
-                        printf("token=[%s]\n", *(tokens + i)); //use to debug parse 
+                        int i;
+                        for (i = 0; *(tokens + i); i++)
+                        {
+                            //printf("token=[%s]\n", *(tokens + i)); //use to debug parse 
+                        }
+                        *(tokens + i)=NULL;
+                        execvp(tokens[0],(tokens));
+                        free(tokens);
                     }
-                    *(tokens + i)=NULL;
-                    execvp(tokens[0],(tokens));
-                    printf("\n");
-                    free(tokens);
+                    exit(0);
                 }
-                //-----------------
 
+                //parent process wait for all child process
+                while ((wpid = wait(&status)) > 0);
+
+                //free memory for command
                 free(*(commands + i));
             }
-            printf("\n");
             free(commands);
         }
     }
