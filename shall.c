@@ -156,7 +156,8 @@ void batch_mode(char cmd[], char *argv[]) {
     //open file 
     FILE * fp;
     fp = fopen(argv[1], "r");
-
+    int fd2 = open(argv[2], O_RDWR | O_CREAT, S_IRUSR | S_IWUSR);
+    
     //if file is null exit programs
     if (fp == NULL){
 	    printf("file not exits");
@@ -169,7 +170,7 @@ void batch_mode(char cmd[], char *argv[]) {
 
         /*  because fgets() get '\n' in to string.so that  
             we need to remove it */
-          if(buffer[strlen(buffer) - 1] == '\n')
+        if(buffer[strlen(buffer) - 1] == '\n')
             buffer[strlen(buffer) - 1] = '\0';
 
         /********************************
@@ -209,7 +210,7 @@ void batch_mode(char cmd[], char *argv[]) {
                             //printf("token=[%s]\n", *(tokens + i)); //use to debug parse 
                         }
                         //redirect to file
-                        int fd2 = open(argv[2], O_RDWR | O_CREAT, S_IRUSR | S_IWUSR);
+                        //int fd2 = open(argv[2], O_RDWR | O_CREAT, S_IRUSR | S_IWUSR);
                         dup2(fd2, 1);
                         close(fd2);
                         //exe command

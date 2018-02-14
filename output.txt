@@ -1,6 +1,14 @@
-total 28
--rw-rw-r-- 1 taytay taytay     7 ก.พ.  14 23:05 command.txt
--rw-rw-r-- 1 taytay taytay     0 ก.พ.  14 23:05 output.txt
--rwxrwxr-x 1 taytay taytay 14016 ก.พ.  14 23:04 shall
--rw-rw-r-- 1 taytay taytay  6849 ก.พ.  14 23:01 shall.c
----------- 1 taytay taytay     0 ก.พ.  14 22:18 test.txt
+total 32
+-rw-rw-r-- 1 taytay taytay    15 ก.พ.  14 23:16 command.txt
+-rw-rw-r-- 1 taytay taytay   315 ก.พ.  14 23:16 output.txt
+-rwxrwxr-x 1 taytay taytay 14016 ก.พ.  14 23:15 shall
+-rw-rw-r-- 1 taytay taytay  6914 ก.พ.  14 23:15 shall.c
+command.txt
+output.txt
+shall
+shall.c
+total 32
+-rw-rw-r-- 1 taytay taytay    15 ก.พ.  14 23:16 command.txt
+-rw-rw-r-- 1 taytay taytay   315 ก.พ.  14 23:16 output.txt
+-rwxrwxr-x 1 taytay taytay 14016 ก.พ.  14 23:15 shall
+-rw-rw-r-- 1 taytay taytay  6914 ก.พ.  14 23:15 shall.c
