@@ -67,7 +67,7 @@ char** str_split(char* a_str, const char a_delim)
     return result;
 }
 
-//go in interactive mode, use user input 
+//go in interactive mode, use user'input for program'input
 void interactive_mode(char cmd[]) {
     while(1){
 
@@ -107,7 +107,11 @@ void interactive_mode(char cmd[]) {
             int i;
             for (i = 0; *(commands + i); i++)
             {
+                
+                if ((strcmp(*(commands + i), "quit") == 0)||(strcmp(*(commands + i), "exit") == 0)) exit(1);
+                
                 //printf("command=[%s]\n", *(commands + i)); //use to debug command 
+                
                 //fork process
                 pid_t child_pid, wpid;
                 int status = 0;
@@ -128,6 +132,8 @@ void interactive_mode(char cmd[]) {
                         }
                         *(tokens + i)=NULL;
                         execvp(tokens[0],(tokens));
+                        //if error command
+                        perror("Error ");
                         free(tokens);
                     }
                     exit(0);
@@ -144,16 +150,100 @@ void interactive_mode(char cmd[]) {
     }
 }
 
+
 void batch_mode(char cmd[], char *argv[]) {
-    printf("batch mode");
+
+    //open file 
+    FILE * fp;
+    fp = fopen(argv[1], "r");
+
+    //if file is null exit programs
+    if (fp == NULL){
+	    printf("file not exits");
+        exit(EXIT_FAILURE);
+ 	}
+
+    //read from file line by line 
+    char buffer[MAX_INPUT_LENGTH];
+    while(fgets(buffer, MAX_INPUT_LENGTH, fp)) {
+
+        /*  because fgets() get '\n' in to string.so that  
+            we need to remove it */
+          if(buffer[strlen(buffer) - 1] == '\n')
+            buffer[strlen(buffer) - 1] = '\0';
+
+        /********************************
+        //parse command
+        ********************************/
+
+        //splite input string into command line
+        char** commands;
+        commands = str_split(buffer, ';');
+
+        if (commands)
+        {
+            int i;
+            for (i = 0; *(commands + i); i++)
+            {
+                
+                if ((strcmp(*(commands + i), "quit") == 0)||(strcmp(*(commands + i), "exit") == 0)) exit(1);
+                
+                //printf("command=[%s]\n", *(commands + i)); //use to debug command 
+                
+                //fork process
+                pid_t child_pid, wpid;
+                int status = 0;
+
+                //for child process only 
+			    if ((child_pid = fork()) == 0) {
+
+                    //splite command into each token
+                    char** tokens;
+                    tokens = str_split(*(commands + i), ' ');
+
+                    if (tokens)
+                    {
+                        int i;
+                        for (i = 0; *(tokens + i); i++)
+                        {
+                            //printf("token=[%s]\n", *(tokens + i)); //use to debug parse 
+                        }
+                        //redirect to file
+                        int fd2 = open(argv[2], O_RDWR | O_CREAT, S_IRUSR | S_IWUSR);
+                        dup2(fd2, 1);
+                        close(fd2);
+                        //exe command
+                        *(tokens + i)=NULL;
+                        execvp(tokens[0],(tokens));
+                        //if error command
+                        perror("Error ");
+                        free(tokens);
+                    }
+                    exit(0);
+                }
+
+                //parent process wait for all child process
+                while ((wpid = wait(&status)) > 0);
+
+                //free memory for command
+                free(*(commands + i));
+            }
+            free(commands);
+        }
+
+    }
+    //close(fp);
+
 }
 
 int main(int argc, char *argv[]){
 
     char cmd[COMMAND_SIZE]; 
-    if (argc != 2)
+    if (argc == 1)
         interactive_mode(cmd);
-    else
+    else if(argc == 3)
         batch_mode(cmd, argv);
+    else
+        printf("wrong input");
     
 }
