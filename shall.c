@@ -18,7 +18,7 @@
 #define EXIT_SUCCESS 0
 #define EXIT_FAILURE 1
 
-//command parser
+//string parser
 char** str_split(char* a_str, const char a_delim)
 {
     char** result    = 0;
@@ -92,25 +92,46 @@ void interactive_mode(char cmd[]) {
             we need to remove it */
           if(user_input[strlen(user_input) - 1] == '\n')
             user_input[strlen(user_input) - 1] = '\0';
+
         
         /********************************
         //parse command
         ********************************/
 
         //splite command into each token 
-        char** tokens;
-        tokens = str_split(user_input, ';');
+        char** commands;
+        commands = str_split(user_input, ';');
 
-        if (tokens)
+        if (commands)
         {
+            
             int i;
-            for (i = 0; *(tokens + i); i++)
+            for (i = 0; *(commands + i); i++)
             {
-                printf("command=[%s]\n", *(tokens + i)); //use to debug parse 
-                free(*(tokens + i));
+                printf("command=[%s]\n", *(commands + i)); //use to debug command 
+
+                //-----------------
+                char** tokens;
+                tokens = str_split(*(commands + i), ' ');
+
+                if (tokens)
+                {
+                    int i;
+                    for (i = 0; *(tokens + i); i++)
+                    {
+                        printf("token=[%s]\n", *(tokens + i)); //use to debug parse 
+                    }
+                    *(tokens + i)=NULL;
+                    execvp(tokens[0],(tokens));
+                    printf("\n");
+                    free(tokens);
+                }
+                //-----------------
+
+                free(*(commands + i));
             }
             printf("\n");
-            free(tokens);
+            free(commands);
         }
     }
 }
