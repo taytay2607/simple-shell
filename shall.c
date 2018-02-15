@@ -13,8 +13,6 @@
 #define PATH_MAX 1024
 #define COMMAND_SIZE 1024
 #define MAX_INPUT_LENGTH 2048
-#define STDIN 0
-#define STDOUT 1
 #define EXIT_SUCCESS 0
 #define EXIT_FAILURE 1
 
@@ -68,22 +66,22 @@ char** str_split(char* a_str, const char a_delim)
 }
 
 //the function is use to change directory
-int changeDirectory(char* args[]){
+int changeDirectory(char* tokens[]){
 	// if we write only 'cd' than change to home directory 
-	if (args[1] == NULL) {
+	if (tokens[1] == NULL) {
 		chdir(getenv("HOME")); 
 		return 1;
 	}
     //if we write 'cd ..' than change to previous directory
-    else if(strcmp(args[1],"..")==0)
+    else if(strcmp(tokens[1],"..")==0)
     {
         chdir(".."); 
     }
 	// Else we change the directory to the one specified by the 
-	// argument, if possible
+	// tokens, if possible
 	else{ 
-		if (chdir(args[1]) == -1) {
-			printf(" %s: no such directory\n", args[1]);
+		if (chdir(tokens[1]) == -1) {
+			printf(" %s: no such directory\n", tokens[1]);
             return -1;
 		}
 	}
@@ -131,9 +129,8 @@ void interactive_mode(char cmd[]) {
             int i;
             for (i = 0; *(commands + i); i++)
             {
-                
+                //if command is "quit" or "exit" exit the programs
                 if ((strcmp(*(commands + i), "quit") == 0)||(strcmp(*(commands + i), "exit") == 0)) exit(1);
-                
                 //printf("command=[%s]\n", *(commands + i)); //use to debug command 
                 
                 //fork process
@@ -148,11 +145,12 @@ void interactive_mode(char cmd[]) {
                     change directory                 */
                 if(strcmp(tokens[0],"cd")==0)
                 {
-                        // printf("CD\n");
+                        //use this function to change directory
                         changeDirectory(tokens);
                 }
 			    else if (tokens) 
                 {  
+                    //fork new process for each command
                     if ((child_pid = fork()) == 0)
                     {
                         int i;
@@ -160,6 +158,7 @@ void interactive_mode(char cmd[]) {
                         {
                             //printf("token=[%s]\n", *(tokens + i)); //use to debug parse 
                         }
+                        //execute command
                         *(tokens + i)=NULL;
                         execvp(tokens[0],(tokens));
                         //if error command
@@ -218,7 +217,7 @@ void batch_mode(char cmd[], char *argv[]) {
             int i;
             for (i = 0; *(commands + i); i++)
             {
-                
+                //if command is "quit" or "exit" exit the programs
                 if ((strcmp(*(commands + i), "quit") == 0)||(strcmp(*(commands + i), "exit") == 0)) exit(1);
                 
                 //printf("command=[%s]\n", *(commands + i)); //use to debug command 
@@ -240,6 +239,7 @@ void batch_mode(char cmd[], char *argv[]) {
                 }
 			    else if (tokens) 
                 {  
+                    //fork new process for each command
                     if ((child_pid = fork()) == 0)
                     {
                         int i;
@@ -270,8 +270,9 @@ void batch_mode(char cmd[], char *argv[]) {
         }
 
     }
+    //close file and file descripter
     close(fd2);
-    //close(fp);
+    fclose(fp);
 
 }
 
