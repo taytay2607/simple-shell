@@ -212,6 +212,7 @@ void batch_mode(char cmd[], char *argv[]) {
         char** commands;
         commands = str_split(buffer, ';');
 
+
         if (commands)
         {
             int i;
@@ -226,21 +227,28 @@ void batch_mode(char cmd[], char *argv[]) {
                 pid_t child_pid, wpid;
                 int status = 0;
 
-                //for child process only 
-			    if ((child_pid = fork()) == 0) {
+                //splite command into each token
+                char** tokens;
+                tokens = str_split(*(commands + i), ' ');
 
-                    //splite command into each token
-                    char** tokens;
-                    tokens = str_split(*(commands + i), ' ');
-
-                    if (tokens)
+                /*  if first token in command is 'CD'
+                    change directory                 */
+                if(strcmp(tokens[0],"cd")==0)
+                {
+                        // printf("CD\n");
+                        changeDirectory(tokens);
+                }
+			    else if (tokens) 
+                {  
+                    if ((child_pid = fork()) == 0)
                     {
                         int i;
                         for (i = 0; *(tokens + i); i++)
                         {
                             //printf("token=[%s]\n", *(tokens + i)); //use to debug parse 
                         }
-                        //redirect to file
+                        *(tokens + i)=NULL;
+                         //redirect to file
                         dup2(fd2, 1);
                         //exe command
                         *(tokens + i)=NULL;
@@ -248,8 +256,8 @@ void batch_mode(char cmd[], char *argv[]) {
                         //if error command
                         perror("Error ");
                         free(tokens);
+                        exit(0);
                     }
-                    exit(0);
                 }
 
                 //parent process wait for all child process
