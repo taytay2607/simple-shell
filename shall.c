@@ -67,16 +67,40 @@ char** str_split(char* a_str, const char a_delim)
     return result;
 }
 
+//the function is use to change directory
+int changeDirectory(char* args[]){
+	// if we write only 'cd' than change to home directory 
+	if (args[1] == NULL) {
+		chdir(getenv("HOME")); 
+		return 1;
+	}
+    //if we write 'cd ..' than change to previous directory
+    else if(strcmp(args[1],"..")==0)
+    {
+        chdir(".."); 
+    }
+	// Else we change the directory to the one specified by the 
+	// argument, if possible
+	else{ 
+		if (chdir(args[1]) == -1) {
+			printf(" %s: no such directory\n", args[1]);
+            return -1;
+		}
+	}
+	return 0;
+}
+
 //go in interactive mode, use user'input for program'input
 void interactive_mode(char cmd[]) {
     while(1){
-
         //allocate memory for user'path
         char current_path[PATH_MAX] = "";
+        char hostn[PATH_MAX] = "";
+        gethostname(hostn, sizeof(hostn));
 
         //show current path
         getcwd(current_path, PATH_MAX);
-        printf("shall:~%s>", current_path);
+        printf("%s:~%s>", hostn,current_path);
 
         // allocation memory for user input (allocate buffer)
         fflush(stdout);
@@ -116,14 +140,20 @@ void interactive_mode(char cmd[]) {
                 pid_t child_pid, wpid;
                 int status = 0;
 
-                //for child process only 
-			    if ((child_pid = fork()) == 0) {
+                //splite command into each token
+                char** tokens;
+                tokens = str_split(*(commands + i), ' ');
 
-                    //splite command into each token
-                    char** tokens;
-                    tokens = str_split(*(commands + i), ' ');
-
-                    if (tokens)
+                /*  if first token in command is 'CD'
+                    change directory                 */
+                if(strcmp(tokens[0],"cd")==0)
+                {
+                        // printf("CD\n");
+                        changeDirectory(tokens);
+                }
+			    else if (tokens) 
+                {  
+                    if ((child_pid = fork()) == 0)
                     {
                         int i;
                         for (i = 0; *(tokens + i); i++)
@@ -135,8 +165,8 @@ void interactive_mode(char cmd[]) {
                         //if error command
                         perror("Error ");
                         free(tokens);
+                        exit(0);
                     }
-                    exit(0);
                 }
 
                 //parent process wait for all child process
@@ -151,13 +181,14 @@ void interactive_mode(char cmd[]) {
 }
 
 
+//go in batch mode, use file for program'input
 void batch_mode(char cmd[], char *argv[]) {
 
     //open file 
     FILE * fp;
     fp = fopen(argv[1], "r");
     int fd2 = open(argv[2], O_RDWR | O_CREAT, S_IRUSR | S_IWUSR);
-    
+
     //if file is null exit programs
     if (fp == NULL){
 	    printf("file not exits");
@@ -210,9 +241,7 @@ void batch_mode(char cmd[], char *argv[]) {
                             //printf("token=[%s]\n", *(tokens + i)); //use to debug parse 
                         }
                         //redirect to file
-                        //int fd2 = open(argv[2], O_RDWR | O_CREAT, S_IRUSR | S_IWUSR);
                         dup2(fd2, 1);
-                        close(fd2);
                         //exe command
                         *(tokens + i)=NULL;
                         execvp(tokens[0],(tokens));
@@ -233,6 +262,7 @@ void batch_mode(char cmd[], char *argv[]) {
         }
 
     }
+    close(fd2);
     //close(fp);
 
 }
@@ -245,6 +275,10 @@ int main(int argc, char *argv[]){
     else if(argc == 3)
         batch_mode(cmd, argv);
     else
-        printf("wrong input");
+    {
+        printf("plese use one of follow command\n");
+        printf("./shall\n");
+        printf("./shall <input_command_file.txt> <output_file.txt>\n");
+    }
     
 }
